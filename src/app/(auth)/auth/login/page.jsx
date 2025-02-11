@@ -23,7 +23,7 @@ export default function Page() {
       // Get user ID
       const { data: userData, error: userError } = await supabase.auth.getUser();
       if (userError || !userData?.user?.id) {
-        console.error("Error fetching user:", userError);
+        console.log("Error fetching user:", userError);
         setLoading(false);
         return;
       }
@@ -34,11 +34,11 @@ export default function Page() {
       const { data: userRecord, error: userDataError } = await supabase
         .from("users")
         .select("username")
-        .eq("id", userId) // Ensure this column name matches your database
+        .eq("_id", userId) // Ensure this column name matches your database
         .single();
 
       if (userDataError) {
-        console.error("Error fetching user data:", userDataError);
+        console.log("Error fetching user data:", userDataError);
         setLoading(false);
         return;
       }

@@ -31,7 +31,7 @@ console.log( error)
 
       const userId = userData.user.id;
 
-      // ✅ Store user in DB
+     
       const { error: dbError } = await supabase.from("users").insert([{ email, _id: userId }], { upsert: true });
 
       if (dbError) {

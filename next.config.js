@@ -15,13 +15,6 @@ const withPWA = require("@ducanh2912/next-pwa").default({
     reactStrictMode: true, // Ensures best practices
     images: {
       domains: ["hypfvstzrrnfacnogvwo.supabase.co"], // Ensure correct Supabase storage domain
-      remotePatterns: [
-        {
-          protocol: "https",
-          hostname: "hypfvstzrrnfacnogvwo.supabase.co",
-          pathname: "/storage/v1/object/public/avatars/**",
-        },
-      ],
     },
   };
   

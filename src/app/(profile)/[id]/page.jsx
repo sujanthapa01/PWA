@@ -9,44 +9,61 @@ export default function UserPage() {
   const { username } = useParams(); // ✅ Get `username` from the URL
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [session, setSession] = useState(null);
   const router = useRouter();
 
   useEffect(() => {
-    const fetchUser = async () => {
-      setLoading(true);
-
-      // 🔥 Get authenticated user session
-      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-      if (sessionError || !sessionData?.session?.user) {
+    // ✅ Fetch session ONCE when component mounts
+    const getSession = async () => {
+      const { data, error } = await supabase.auth.getSession();
+      if (error || !data?.session?.user) {
         router.replace("/auth/login");
         return;
       }
+      setSession(data.session);
+    };
 
-      const userId = sessionData.session.user.id; // ✅ Authenticated user ID
-      console.log("Authenticated User ID:", userId);
+    getSession();
 
-      // 🔥 Fetch user data using `userId`
+    // ✅ Listen for auth state changes (so it doesn’t refetch every time)
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session) {
+        setSession(session);
+      } else {
+        setUser(null);
+        router.replace("/auth/login");
+      }
+    });
+
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
+  }, [router]);
+
+  useEffect(() => {
+    if (!session) return; // Wait for session to be set
+
+    const fetchUser = async () => {
+      setLoading(true);
+      const userId = session.user.id;
+
       const { data, error } = await supabase
         .from("users")
-        .select("*") // ✅ Get all user data
-        .eq("_id", userId) // ✅ Fetch by `id` (not username)
+        .select("*")
+        .eq("_id", userId)
         .single();
 
       if (error || !data) {
         console.error("Error fetching user:", error);
-        setLoading(false);
-        return;
-      }else{
-        setUser(data)
+      } else {
+        setUser(data);
       }
 
-      console.log("Fetched User Data:", data);
-      setUser(data);
       setLoading(false);
     };
 
     fetchUser();
-  }, [username, router]);
+  }, [session]); // ✅ Only runs when session is set
 
   if (loading)
     return (

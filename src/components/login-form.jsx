@@ -56,7 +56,7 @@ export function LoginForm({ className, ...props }) {
           .single();
 
         if (userDataError) {
-          console.error("Error fetching user data:", userDataError);
+          console.log("Error fetching user data:", userDataError);
           setLoading(false);
           return;
         }

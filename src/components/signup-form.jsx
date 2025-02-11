@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import Link from "next/link";
 
 export default function SignupForm() {
   const [email, setEmail] = useState("");
@@ -30,36 +31,39 @@ export default function SignupForm() {
       let authResponse;
 
       if (usePassword) {
-       
         authResponse = await supabase.auth.signUp({ email, password });
       } else {
         authResponse = await supabase.auth.signInWithOtp({
           email,
-          options: { shouldCreateUser: true, emailRedirectTo: `${window.location.origin}/auth/signup/verify-link` },
+          options: { 
+            shouldCreateUser: true, 
+            emailRedirectTo: `${window.location.origin}/auth/signup/verify-link` 
+          },
         });
 
         router.push(`/auth/signup/verify-link?email=${email}`);
+        return;
       }
 
-
-
-      
       if (authResponse.error) {
-        throw authResponse.error;
+        throw new Error(authResponse.error.message);
       }
 
-      // ✅ Get user after signup
-      const { data: userData, error: userError } = await supabase.auth.getUser();
-      if (userError) throw userError;
+      // ✅ Get authenticated user
+      const { data: sessionData, error: sessionError } = await supabase.auth.getUser();
+      if (sessionError) throw new Error(sessionError.message);
 
-      const userId = userData.user.id;
+      const userId = sessionData.user.id;
 
-      // ✅ Store user in Supabase Database
-      const { error: dbError } = await supabase.from("users").insert([{ email : email, _id: userId }]);
-      if (dbError) throw dbError;
+      // ✅ Store user in the Supabase `users` table
+      const { error: dbError } = await supabase
+        .from("users")
+        .insert([{ email, _id: userId }]);
+
+      if (dbError) throw new Error(dbError.message);
 
       console.log("✅ User signed up successfully!");
-      router.push(`/${userId}`);
+      router.push(`/auth/login`);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -109,6 +113,12 @@ export default function SignupForm() {
         >
           {usePassword ? "Use Magic Link Instead" : "Use Password Instead"}
         </button>
+        <p>
+          Already have an account?{" "}
+          <Link href={"/auth/login"} className="text-blue-500">
+            Login
+          </Link>
+        </p>
       </form>
     </div>
   );

@@ -1,48 +1,63 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase";
-import SpinnerLoader from '@/components/ui/loader'
+import { useAuth } from "@/hooks/useAuth";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Settings } from "lucide-react";
+import SpinnerLoader from "@/components/ui/loader";
 
 const Profile = ({ user }) => {
-  const [session, setSession] = useState(null);
+  const { session } = useAuth();
   const router = useRouter();
 
-  useEffect(() => {
-    const fetchSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setSession(session);
-    };
-    fetchSession();
-  }, []);
-
-  const handleLogOut = async () => {
-    await supabase.auth.signOut();
-    setSession(null); 
-    router.push("/auth/login");
-  };
-
-  if (!session) return <div><SpinnerLoader/></div>;
-  if (!session) { 
-    router.push("/auth/login");
-  } 
-
+  if (!session) return <SpinnerLoader />;
 
   return (
-    <div className="p-6 flex flex-col items-center justify-center h-[100vh]">
-      <h1 className="text-xl font-bold">User Profile</h1>
-      <img src={user?.avatar_url} className="rounded-full  h-[10rem] w-[10rem]  object-cover " alt="avatar"/>
-      <p className="text-black"><strong>Email:</strong> {user.email}</p>
-      <p><strong>Name:</strong> {user.username}</p>
-      <p><strong>Bio:</strong> {user.bio}</p>
+    <div className="flex flex-col items-center w-full min-h-screen bg-white">
+      {/* Profile Header */}
+      <div className="w-full max-w-xl p-4 border-b flex justify-between items-center">
+        <h2 className="text-xl font-semibold">{user?.username}</h2>
+        <Button
+          variant="ghost"
+          className="flex items-center gap-2"
+          onClick={() => router.push("/settings")}
+        >
+          <Settings className="w-5 h-5" />
+          Settings
+        </Button>
+      </div>
 
-      <button
-        type="button"
-        onClick={handleLogOut}
-        className="mt-4 p-2 bg-red-500 text-white rounded"
-      >
-        Logout
-      </button>
+      {/* Profile Info */}
+      <div className="w-full max-w-xl p-4 flex items-center gap-4">
+        {/* Avatar */}
+        <Avatar className="w-24 h-24 border-2 border-gray-300">
+          <AvatarImage src={user?.avatar_url} alt={user?.username} />
+          <AvatarFallback>{user?.username?.charAt(0).toUpperCase()}</AvatarFallback>
+        </Avatar>
+
+        {/* Stats */}
+        <div className="flex-1 flex justify-around text-center">
+          <div>
+            <p className="text-lg font-semibold">10</p>
+            <p className="text-gray-500 text-sm">Posts</p>
+          </div>
+          <div>
+            <p className="text-lg font-semibold">1.2K</p>
+            <p className="text-gray-500 text-sm">Followers</p>
+          </div>
+          <div>
+            <p className="text-lg font-semibold">500</p>
+            <p className="text-gray-500 text-sm">Following</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Bio */}
+      <div className="w-full max-w-xl px-4">
+        <p className="font-medium">{user?.bio || "No bio available."}</p>
+        <p className="text-sm text-gray-500">{user?.state}, {user?.country}</p>
+      </div>
     </div>
   );
 };
