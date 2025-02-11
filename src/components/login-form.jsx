@@ -15,52 +15,66 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-
-export function LoginForm({
-  className,
-  ...props
-}) {
+export function LoginForm({ className, ...props }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-// console.log(supabase)
+
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError(""); // Reset any previous errors
-  
+    setError("");
+
     if (!email || !password) {
       setError("Please fill in all fields.");
       setLoading(false);
       return;
     }
-  
-    try {
 
+    try {
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
-  
-      setLoading(false);
-  
+
       if (error) {
-        setError(error.message); t
-      } else {
-     
-        console.log("User logged in:", data);
+        setError(error.message);
+        setLoading(false);
+        return;
+      }
+
+      if (data?.user) {
         const userId = data.user.id;
- 
-        router.push(`/user/${userId}`);
+
+        
+        const { data: userData, error: userDataError } = await supabase
+          .from("users")
+          .select("username")
+          .eq("_id", userId) 
+          .single();
+
+        if (userDataError) {
+          console.error("Error fetching user data:", userDataError);
+          setLoading(false);
+          return;
+        }
+
+        // ✅ Redirect based on username existence
+        if (!userData?.username) {
+          router.push(`/set-username/?id=${userId}`);
+        } else {
+          router.push(`${userData.username}`); // Or another main route
+        }
       }
     } catch (error) {
-      setLoading(false);
+      console.error("Login error:", error);
       setError("An error occurred while logging in.");
     }
+
+    setLoading(false);
   };
-  
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
@@ -68,7 +82,7 @@ export function LoginForm({
         <CardHeader>
           <CardTitle className="text-2xl">Login</CardTitle>
           <CardDescription>
-            Enter your email below to log in to your account
+            Enter your email below to log in to your account.
           </CardDescription>
         </CardHeader>
         <CardContent>

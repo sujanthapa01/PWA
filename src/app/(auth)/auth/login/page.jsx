@@ -3,26 +3,57 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { LoginForm } from "@/components/login-form";
+import SpinnerLoader from "@/components/ui/loader";
 
 export default function Page() {
-  // const supabase = createClientComponentClient();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function checkUser() {
+      setLoading(true);
+
+      // Get session
       const { data: sessionData } = await supabase.auth.getSession();
-      if (sessionData?.session) {
-        const { data: userData } = await supabase.auth.getUser();
-        if (userData?.user?.id) {
-          router.replace(`/user/${userData.user.id}`);
-        }
+      if (!sessionData?.session) {
+        setLoading(false);
+        return;
       }
+
+      // Get user ID
+      const { data: userData, error: userError } = await supabase.auth.getUser();
+      if (userError || !userData?.user?.id) {
+        console.error("Error fetching user:", userError);
+        setLoading(false);
+        return;
+      }
+
+      const userId = userData.user.id;
+
+      // Fetch username
+      const { data: userRecord, error: userDataError } = await supabase
+        .from("users")
+        .select("username")
+        .eq("id", userId) // Ensure this column name matches your database
+        .single();
+
+      if (userDataError) {
+        console.error("Error fetching user data:", userDataError);
+        setLoading(false);
+        return;
+      }
+
+      if (!userRecord?.username) {
+        router.replace(`/set-username/${userId}`);
+      } else {
+        router.replace(`/${userRecord.username}`); // Redirect to username-based route
+      }
+
       setLoading(false);
     }
 
     checkUser();
-  }, []);
+  }, [router]);
 
   if (loading) return <p>Loading...</p>;
 
