@@ -14,8 +14,10 @@ export const useAuth = () => {
     fetchSession();
   }, []);
 
+  console.log(session)
   const logout = async () => {
     await supabase.auth.signOut();
+    localStorage.removeItem("userData")
     setSession(null);
     router.push("/auth/login");
   };

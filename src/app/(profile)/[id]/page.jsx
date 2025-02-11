@@ -6,14 +6,14 @@ import Profile from "./profile";
 import SpinnerLoader from "@/components/ui/loader";
 
 export default function UserPage() {
-  const { username } = useParams(); // ✅ Get `username` from the URL
+  const { username } = useParams(); 
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [session, setSession] = useState(null);
   const router = useRouter();
 
+
   useEffect(() => {
-    // ✅ Fetch session ONCE when component mounts
     const getSession = async () => {
       const { data, error } = await supabase.auth.getSession();
       if (error || !data?.session?.user) {
@@ -24,12 +24,11 @@ export default function UserPage() {
     };
 
     getSession();
-
-    // ✅ Listen for auth state changes (so it doesn’t refetch every time)
-    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session) {
         setSession(session);
       } else {
+        localStorage.removeItem("userData");
         setUser(null);
         router.replace("/auth/login");
       }
@@ -40,13 +39,21 @@ export default function UserPage() {
     };
   }, [router]);
 
+ 
   useEffect(() => {
-    if (!session) return; // Wait for session to be set
+    if (!session) return;
 
-    const fetchUser = async () => {
+    const loadUser = async () => {
       setLoading(true);
-      const userId = session.user.id;
 
+      const cachedUser = localStorage.getItem("userData");
+      if (cachedUser) {
+        setUser(JSON.parse(cachedUser));
+        setLoading(false);
+        return;
+      }
+
+      const userId = session.user.id;
       const { data, error } = await supabase
         .from("users")
         .select("*")
@@ -57,13 +64,14 @@ export default function UserPage() {
         console.error("Error fetching user:", error);
       } else {
         setUser(data);
+        localStorage.setItem("userData", JSON.stringify(data)); 
       }
 
       setLoading(false);
     };
 
-    fetchUser();
-  }, [session]); // ✅ Only runs when session is set
+    loadUser();
+  }, [session]);
 
   if (loading)
     return (

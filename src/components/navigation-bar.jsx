@@ -17,7 +17,7 @@ console.log("user",user)
           icon={<User size={24} />}
           label="Profile"
         />
-        <NavItem href="/settings" icon={<Search size={24} />} label="Search" />
+        <NavItem href="/search" icon={<Search size={24} />} label="Search" />
       </div>
     </nav>
   );

@@ -33,7 +33,7 @@ const Profile = ({ user }) => {
         {/* Avatar */}
         <Avatar className="w-24 h-24 border-2 border-gray-300">
           <AvatarImage src={user?.avatar_url} alt={user?.username} />
-          <AvatarFallback>{user?.username?.charAt(0).toUpperCase()}</AvatarFallback>
+          <AvatarFallback className="text-5xl font-extrabold text-purple-700">{user?.username?.charAt(0).toUpperCase()}</AvatarFallback>
         </Avatar>
 
         {/* Stats */}

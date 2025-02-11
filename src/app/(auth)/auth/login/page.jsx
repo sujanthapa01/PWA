@@ -46,7 +46,7 @@ export default function Page() {
       if (!userRecord?.username) {
         router.replace(`/set-username/${userId}`);
       } else {
-        router.replace(`/${userRecord.username}`); // Redirect to username-based route
+        router.replace(`/${userRecord.username}`);
       }
 
       setLoading(false);
