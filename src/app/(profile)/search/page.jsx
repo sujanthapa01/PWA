@@ -46,12 +46,12 @@ export default function SearchPage() {
             >
               <Avatar>
                 <AvatarImage src={user.avatar_url} alt={user.username} />
-                <AvatarFallback>{user.username.charAt(0).toUpperCase()}</AvatarFallback>
+                <AvatarFallback>{user?.username?.charAt(0).toUpperCase()}</AvatarFallback>
               </Avatar>
               <span className="text-lg font-medium">{user.username}</span>
             </div>
           ))}
-          {query.length > 1 && results.length === 0 && !loading && (
+          {query.length > 0 && results.length === 0 && !loading && (
             <p className="text-gray-500 text-sm mt-2">No users found</p>
           )}
         </div>

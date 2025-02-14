@@ -4,14 +4,15 @@ import { useRouter, useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import Profile from "./profile";
 import SpinnerLoader from "@/components/ui/loader";
+import cacheUser from "@/hooks/useCacheUser";
+import redis from "@/lib/redis";
 
 export default function UserPage() {
-  const { username } = useParams(); 
-  const [user, setUser] = useState(null);
+  const { username } = useParams();
   const [loading, setLoading] = useState(true);
+  const [userData, setUserData] = useState(null);
   const [session, setSession] = useState(null);
   const router = useRouter();
-
 
   useEffect(() => {
     const getSession = async () => {
@@ -29,56 +30,64 @@ export default function UserPage() {
         setSession(session);
       } else {
         localStorage.removeItem("userData");
-        setUser(null);
         router.replace("/auth/login");
       }
     });
 
     return () => {
-      authListener.subscription.unsubscribe();
+      authListener?.unsubscribe?.();
     };
   }, [router]);
 
- 
   useEffect(() => {
     if (!session) return;
 
     const loadUser = async () => {
       setLoading(true);
-
-      const cachedUser = localStorage.getItem("userData");
-      if (cachedUser) {
-        setUser(JSON.parse(cachedUser));
-        setLoading(false);
-        return;
-      }
-
       const userId = session.user.id;
-      const { data, error } = await supabase
-        .from("users")
-        .select("*")
-        .eq("_id", userId)
-        .single();
 
-      if (error || !data) {
-        console.error("Error fetching user:", error);
-      } else {
-        setUser(data);
-        localStorage.setItem("userData", JSON.stringify(data)); 
+      // Fetch from Redis & Supabase in parallel
+      const redisPromise = redis.get(`userID:${userId}`);
+      const supabasePromise = supabase.from("users").select("*").eq("_id", userId).single();
+      
+      try {
+        const userFromRedis = await redisPromise;
+        if (userFromRedis) {
+          const parsedData = typeof userFromRedis === "string" ? JSON.parse(userFromRedis) : userFromRedis;
+          console.log("User from Redis:", parsedData);
+          setUserData(parsedData);
+          setLoading(false);
+          return;
+        }
+      } catch (error) {
+        console.error("Error parsing Redis data:", error);
       }
 
+      try {
+        const { data: user, error } = await supabasePromise;
+        if (error || !user) {
+          console.error("Error fetching user from Supabase:", error);
+          setLoading(false);
+          return;
+        }
+        setUserData(user);
+        await cacheUser(userId, user);
+      } catch (dbError) {
+        console.error("Error fetching from Supabase:", dbError);
+      }
       setLoading(false);
     };
 
     loadUser();
   }, [session]);
 
-  if (loading)
+  if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
         <SpinnerLoader />
       </div>
     );
+  }
 
-  return user ? <Profile user={user} /> : <p className="text-center text-red-500">User not found</p>;
+  return userData ? <Profile user={userData} /> : <p className="text-center text-red-500">User not found</p>;
 }

@@ -6,7 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { useRouter } from "next/navigation";
 
-export default function CreateAccount() {
+export default function SetUsername() {
   const supabase = createClientComponentClient();
   const searchParams = useSearchParams();
   const userId = searchParams.get("id");

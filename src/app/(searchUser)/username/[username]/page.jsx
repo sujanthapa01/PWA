@@ -1,12 +1,39 @@
-"use server";
-import { notFound } from "next/navigation";
-import  searchUser  from "@/hooks/searchUser";
+"use client";
 
-export default async function Page({ params }) {
-  console.log("Params:", params);
+import { useEffect, useState } from "react";
+import { useRouter, useParams, notFound } from "next/navigation";
+import searchUser from "@/hooks/searchUser";
+import SpinnerLoader from "@/components/ui/loader"; 
 
-  const user = await searchUser(params.username);
-  console.log(user)
+export default function Page() {
+  const { username } = useParams();
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      setLoading(true);
+      const userData = await searchUser(username);
+      if (!userData) {
+        router.replace("/404"); 
+        return;
+      }
+      setUser(userData);
+      setLoading(false);
+    };
+
+    fetchUser();
+  }, [username, router]);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        {/* <SpinnerLoader /> */}<></>
+      </div>
+    );
+  }
+
   if (!user) return notFound(); 
 
   return (

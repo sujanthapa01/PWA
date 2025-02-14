@@ -9,6 +9,8 @@ export default function Page() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
 
+
+ 
   useEffect(() => {
     async function checkUser() {
       setLoading(true);
@@ -34,7 +36,7 @@ export default function Page() {
       const { data: userRecord, error: userDataError } = await supabase
         .from("users")
         .select("username")
-        .eq("_id", userId) // Ensure this column name matches your database
+        .eq("_id", userId) 
         .single();
 
       if (userDataError) {

@@ -1,7 +1,6 @@
 "use client";
 import { createContext, useContext, useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase";  // Corrected import name
-
+import { supabase } from "@/lib/supabase"; 
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
@@ -9,7 +8,7 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     const getUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession();  // Corrected reference
+      const { data: { session } } = await supabase.auth.getSession(); 
       setUser(session?.user || null);
     };
     
