@@ -5,6 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Settings } from "lucide-react";
+import Image from "next/image";
 import SpinnerLoader from "@/components/ui/loader";
 
 const Profile = ({ user }) => {
@@ -32,8 +33,22 @@ const Profile = ({ user }) => {
       <div className="w-full max-w-xl p-4 flex items-center gap-4">
         {/* Avatar */}
         <Avatar className="w-24 h-24 border-2 border-gray-300">
-          <AvatarImage src={user?.avatar_url} alt={user?.username} />
-          <AvatarFallback className="text-5xl font-extrabold text-purple-700">{user?.username?.charAt(0).toUpperCase()}</AvatarFallback>
+          {user?.avatar_url ? (
+            <Image
+              src={user.avatar_url}
+              alt={user.username}
+              width={96}  // Match the Avatar size
+              height={96}
+              className="rounded-full"
+              priority
+              unoptimized={true} 
+             
+            />
+          ) : (
+            <AvatarFallback className="text-5xl font-extrabold text-purple-700">
+              {user?.username?.charAt(0).toUpperCase()}
+            </AvatarFallback>
+          )}
         </Avatar>
 
         {/* Stats */}

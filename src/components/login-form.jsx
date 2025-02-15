@@ -65,7 +65,7 @@ export function LoginForm({ className, ...props }) {
         if (!userData?.username) {
           router.push(`/set-username/?id=${userId}`);
         } else {
-          router.push(`${userData.username}`); // Or another main route
+          router.push(`/${userData.username}`); // Or another main route
         }
       }
     } catch (error) {

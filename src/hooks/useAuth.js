@@ -1,39 +1,56 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
-
+import { useRedis } from "@/contexts/RedisContext";
 export const useAuth = () => {
-  const [session, setSession] = useState(null);
+
+  const { removeCache } = useRedis();
+  const [session, setSession] = useState(() => {
+    if (typeof window !== "undefined") {
+      return JSON.parse(localStorage.getItem("session")) || null;
+    }
+    return null;
+  });
+
   const router = useRouter();
 
-  // Fetch session on mount
   useEffect(() => {
     const fetchSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setSession(session);
+      const { data } = await supabase.auth.getSession();
+      if (data?.session) {
+        setSession((prev) => prev || data.session);
+        localStorage.setItem("session", JSON.stringify(data.session));
+      }
     };
 
-    fetchSession();
+    if (!session) fetchSession();
 
     // Listen for authentication state changes
-    const { data: authListener } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        setSession(session);
+    const { data: authListener } = supabase.auth.onAuthStateChange((_event, newSession) => {
+      if (newSession) {
+        setSession(newSession);
+        localStorage.setItem("session", JSON.stringify(newSession));
+      } else {
+        setSession(null);
+        localStorage.removeItem("session");
+        router.replace("/auth/login");
       }
-    );
+    });
 
     return () => {
-      authListener?.subscription.unsubscribe();
+      authListener?.subscription?.unsubscribe();
     };
-  }, []);
+  }, [session, router]);
 
-  console.log("useAuth:", session);
-
-  const logout = async () => {
+  // Memoize logout function
+  const logout = useCallback(async () => {
     await supabase.auth.signOut();
     setSession(null);
+    localStorage.removeItem("session");
+    removeCache(session.user.id);
+
     router.push("/auth/login");
-  };
+  }, [router]);
 
   return { session, logout };
 };

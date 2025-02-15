@@ -40,7 +40,7 @@ console.log( error)
         return;
       }
 
-      router.push(`/user/profile/${userId}`);
+      router.push(`/username/${userId}`);
     };
 
     checkSession();

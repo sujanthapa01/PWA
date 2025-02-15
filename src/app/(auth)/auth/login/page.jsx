@@ -1,61 +1,58 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { LoginForm } from "@/components/login-form";
-import SpinnerLoader from "@/components/ui/loader";
 
 export default function Page() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
 
+  const checkUser = useCallback(async () => {
+    setLoading(true);
 
- 
-  useEffect(() => {
-    async function checkUser() {
-      setLoading(true);
-
-      // Get session
-      const { data: sessionData } = await supabase.auth.getSession();
-      if (!sessionData?.session) {
-        setLoading(false);
-        return;
-      }
-
-      // Get user ID
-      const { data: userData, error: userError } = await supabase.auth.getUser();
-      if (userError || !userData?.user?.id) {
-        console.log("Error fetching user:", userError);
-        setLoading(false);
-        return;
-      }
-
-      const userId = userData.user.id;
-
-      // Fetch username
-      const { data: userRecord, error: userDataError } = await supabase
-        .from("users")
-        .select("username")
-        .eq("_id", userId) 
-        .single();
-
-      if (userDataError) {
-        console.log("Error fetching user data:", userDataError);
-        setLoading(false);
-        return;
-      }
-
-      if (!userRecord?.username) {
-        router.replace(`/set-username/${userId}`);
-      } else {
-        router.replace(`/${userRecord.username}`);
-      }
-
+    // Get session
+    const { data: sessionData } = await supabase.auth.getSession();
+    if (!sessionData?.session) {
       setLoading(false);
+      return;
     }
 
-    checkUser();
+    // Get user ID
+    const { data: userData, error: userError } = await supabase.auth.getUser();
+    if (userError || !userData?.user?.id) {
+      console.log("Error fetching user:", userError);
+      setLoading(false);
+      return;
+    }
+
+    const userId = userData.user.id;
+
+    // Fetch username
+    const { data: userRecord, error: userDataError } = await supabase
+      .from("users")
+      .select("username")
+      .eq("_id", userId)
+      .single();
+
+    if (userDataError) {
+      console.log("Error fetching user data:", userDataError);
+      setLoading(false);
+      return;
+    }
+
+    if (!userRecord?.username) {
+      router.replace(`/set-username/${userId}`);
+    } else {
+      router.replace(`/${userRecord.username}`);
+    }
+
+    setLoading(false);
   }, [router]);
+
+  useEffect(() => {
+    checkUser();
+  }, [checkUser]);
 
   if (loading) return <p>Loading...</p>;
 

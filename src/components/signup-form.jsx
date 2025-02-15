@@ -37,7 +37,7 @@ export default function SignupForm() {
           email,
           options: { 
             shouldCreateUser: true, 
-            emailRedirectTo: `${window.location.origin}/auth/signup/verify-link` 
+            emailRedirectTo: `${window.location.origin}/auth/login` 
           },
         });
 
@@ -49,20 +49,19 @@ export default function SignupForm() {
         throw new Error(authResponse.error.message);
       }
 
-      // ✅ Get authenticated user
+      // Get authenticated user
       const { data: sessionData, error: sessionError } = await supabase.auth.getUser();
       if (sessionError) throw new Error(sessionError.message);
 
       const userId = sessionData.user.id;
 
-      // ✅ Store user in the Supabase `users` table
       const { error: dbError } = await supabase
         .from("users")
         .insert([{ email, _id: userId }]);
 
       if (dbError) throw new Error(dbError.message);
 
-      console.log("✅ User signed up successfully!");
+      console.log("User signed up successfully!");
       router.push(`/auth/login`);
     } catch (err) {
       setError(err.message);

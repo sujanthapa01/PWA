@@ -3,19 +3,24 @@ import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import Profile from "./profile";
-import SpinnerLoader from "@/components/ui/loader";
-import cacheUser from "@/hooks/useCacheUser";
-import redis from "@/lib/redis";
+import PageNotFound from "@/app/(profile)/PageNotFound/page";
+import { useRedis } from "@/contexts/RedisContext";
+import Loader  from "@/components/ui/loader"
 
 export default function UserPage() {
-  const { username } = useParams();
+  const params = useParams();
+  const id = params?.id; 
+
   const [loading, setLoading] = useState(true);
   const [userData, setUserData] = useState(null);
   const [session, setSession] = useState(null);
   const router = useRouter();
+  const { setCacheData, getCache } = useRedis();
+
 
   useEffect(() => {
     const getSession = async () => {
+      setLoading(true);
       const { data, error } = await supabase.auth.getSession();
       if (error || !data?.session?.user) {
         router.replace("/auth/login");
@@ -23,71 +28,51 @@ export default function UserPage() {
       }
       setSession(data.session);
     };
-
     getSession();
-    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session) {
-        setSession(session);
-      } else {
-        localStorage.removeItem("userData");
-        router.replace("/auth/login");
-      }
-    });
-
-    return () => {
-      authListener?.unsubscribe?.();
-    };
   }, [router]);
 
+
   useEffect(() => {
-    if (!session) return;
+    if (!session) return; 
 
     const loadUser = async () => {
       setLoading(true);
       const userId = session.user.id;
 
-      // Fetch from Redis & Supabase in parallel
-      const redisPromise = redis.get(`userID:${userId}`);
-      const supabasePromise = supabase.from("users").select("*").eq("_id", userId).single();
-      
       try {
-        const userFromRedis = await redisPromise;
+        // Check Redis first
+        const userFromRedis = await getCache(userId);
         if (userFromRedis) {
           const parsedData = typeof userFromRedis === "string" ? JSON.parse(userFromRedis) : userFromRedis;
-          console.log("User from Redis:", parsedData);
+          // console.log("User from Redis:", parsedData);
           setUserData(parsedData);
           setLoading(false);
           return;
         }
+
+        // Fetch from Supabase if not in Redis
+        const { data: user, error } = await supabase.from("users").select("username").eq("_id", userId).single();
+        if (error || !user) {
+          console.error("Error fetching user:", error);
+          setUserData(null);
+        } else {
+          setUserData(user);
+          await setCacheData(userId, JSON.stringify(user));
+        }
       } catch (error) {
-        console.error("Error parsing Redis data:", error);
+        console.error("Error fetching user:", error);
+        setUserData(null);
       }
 
-      try {
-        const { data: user, error } = await supabasePromise;
-        if (error || !user) {
-          console.error("Error fetching user from Supabase:", error);
-          setLoading(false);
-          return;
-        }
-        setUserData(user);
-        await cacheUser(userId, user);
-      } catch (dbError) {
-        console.error("Error fetching from Supabase:", dbError);
-      }
       setLoading(false);
     };
 
     loadUser();
-  }, [session]);
+  }, [session, getCache, setCacheData]);
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <SpinnerLoader />
-      </div>
-    );
+  if (userData && userData.username !== id) {
+    return <PageNotFound />;
   }
 
-  return userData ? <Profile user={userData} /> : <p className="text-center text-red-500">User not found</p>;
+  return userData ? <Profile user={userData} /> : <></>;
 }

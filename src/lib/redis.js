@@ -1,9 +1,16 @@
+require("dotenv").config();
 import { Redis } from "@upstash/redis";
 
+if (!process.env.NEXT_PUBLIC_UPSTASH_REDIS_REST_URL || !process.env.NEXT_PUBLIC_UPSTASH_REDIS_REST_TOKEN) {
+    console.log("Missing Upstash Redis environment variables!");
+}
+const upstashUrl = process.env.NEXT_PUBLIC_UPSTASH_REDIS_REST_URL;
+const upstashToken = process.env.NEXT_PUBLIC_UPSTASH_REDIS_REST_TOKEN;
+
+
 const redis = new Redis({
-    url: "https://coherent-escargot-15164.upstash.io",
-    token:"ATs8AAIjcDFhNTBhOWRjNzM3NjM0NTc5YjM5MzUyMzgzOWY5ZmEyY3AxMA" 
+    url: upstashUrl,
+    token: upstashToken
 });
 
-console.log(process.env.UPSTASH_REDIS_REST_URL,process.env.UPSTASH_REDIS_REST_TOKEN)
 export default redis;

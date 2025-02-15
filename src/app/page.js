@@ -1,17 +1,24 @@
-"use client"
+"use client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
+import useUserProfile from "@/hooks/useUserProfile";
 import { useEffect } from "react";
+import HomePage from "@/components/HomePage";
 
 export default function Home() {
-  const { user } = useAuth();
+  const { user: authUser } = useAuth();
+  const { user, loading } = useUserProfile();
   const router = useRouter();
 
   useEffect(() => {
-    if (!user) {
-      router.push("/auth/login");
+    if (!authUser) return; // If not logged in, stay on HomePage
+    if (!loading && user?.username) {
+      router.replace(`/${user.username}`);
     }
-  }, [user, router]);
+  }, [authUser, user?.username, loading, router]);
 
-  return <>{user ? "Main Page" : "Redirecting..."}</>;
+
+  if (loading) return null;
+  if (!authUser) return <HomePage />;
+  return null; 
 }
