@@ -41,9 +41,9 @@ export const useAuth = () => {
     return () => {
       authListener?.subscription?.unsubscribe();
     };
-  }, [router]); // Remove `session` from dependencies
+  }, [router]);
 
-  // Memoized logout function
+  
   const logout = useCallback(async () => {
     if (session?.user?.id) {
       removeCache(session.user.id);
