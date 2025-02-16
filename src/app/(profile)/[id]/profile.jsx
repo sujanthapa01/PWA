@@ -1,77 +1,85 @@
 "use client";
-import React from "react";
-import { useRouter } from "next/navigation";
-import { useAuth } from "@/hooks/useAuth";
+import React, { useRef } from "react";
+
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Settings } from "lucide-react";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import Image from "next/image";
 import SpinnerLoader from "@/components/ui/loader";
 
 const Profile = ({ user }) => {
-  const { session } = useAuth();
-  const router = useRouter();
-
-  if (!session) return <SpinnerLoader />;
-
+  if (!user) return <SpinnerLoader />;
+console.log(user)
   return (
-    <div className="flex flex-col items-center w-full min-h-screen bg-white">
+    <div className="flex flex-col items-center w-full min-h-screen bg-white px-4 sm:px-6 md:px-8">
       {/* Profile Header */}
-      <div className="w-full max-w-xl p-4 border-b flex justify-between items-center">
-        <h2 className="text-xl font-semibold">{user?.username}</h2>
-        <Button
-          variant="ghost"
-          className="flex items-center gap-2"
-          onClick={() => router.push("/settings")}
-        >
-          <Settings className="w-5 h-5" />
-          Settings
-        </Button>
-      </div>
-
-      {/* Profile Info */}
-      <div className="w-full max-w-xl p-4 flex items-center gap-4">
+      <div className="w-full max-w-3xl flex-col flex items-center gap-6 py-6 border-b">
         {/* Avatar */}
-        <Avatar className="w-24 h-24 border-2 border-gray-300">
-          {user?.avatar_url ? (
+        <Avatar className="w-24 h-24 sm:w-32 sm:h-32 border-2 border-gray-300">
+          {user.avatar_url ? (
             <Image
               src={user.avatar_url}
               alt={user.username}
-              width={96}  // Match the Avatar size
-              height={96}
+              width={128}
+              height={128}
               className="rounded-full"
               priority
-              unoptimized={true} 
-             
+              unoptimized
             />
           ) : (
             <AvatarFallback className="text-5xl font-extrabold text-purple-700">
-              {user?.username?.charAt(0).toUpperCase()}
+              {user.username?.charAt(0).toUpperCase()}
             </AvatarFallback>
           )}
         </Avatar>
 
-        {/* Stats */}
-        <div className="flex-1 flex justify-around text-center">
-          <div>
-            <p className="text-lg font-semibold">10</p>
-            <p className="text-gray-500 text-sm">Posts</p>
+        {/* Username & Stats */}
+        <div className="flex flex-col flex-grow text-center">
+          <h2 className="text-2xl font-semibold">
+            {user.username} 
+          </h2>
+          {/* Stats */}
+          <div className="flex ml-12 gap-12 mt-2 text-center">
+            <div>
+              <p className="text-lg font-semibold">10</p>
+              <p className="text-gray-500 text-sm">Posts</p>
+            </div>
+            <div>
+              <p className="text-lg font-semibold">1.2K</p>
+              <p className="text-gray-500 text-sm">Followers</p>
+            </div>
+            <div>
+              <p className="text-lg font-semibold">500</p>
+              <p className="text-gray-500 text-sm">Following</p>
+            </div>
           </div>
-          <div>
-            <p className="text-lg font-semibold">1.2K</p>
-            <p className="text-gray-500 text-sm">Followers</p>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex items-center gap-4 flex-col">
+          <div className="flex gap-4">
+            <Button variant="outline" className="px-4 py-2 text-sm font-medium">
+              Follow
+            </Button>
+            <Button variant="outline" className="px-4 py-2 text-sm font-medium">
+              Message
+            </Button>
           </div>
-          <div>
-            <p className="text-lg font-semibold">500</p>
-            <p className="text-gray-500 text-sm">Following</p>
-          </div>
+        </div>
+
+        {/* Bio Section */}
+        <div className="w-full max-w-3xl p-4">
+          <p className="text-sm sm:text-base font-medium">{user.bio || "No bio available."}</p>
+          <p className="text-sm text-gray-500 mt-1">
+            {user.state}, {user.country}
+          </p>
         </div>
       </div>
 
-      {/* Bio */}
-      <div className="w-full max-w-xl px-4">
-        <p className="font-medium">{user?.bio || "No bio available."}</p>
-        <p className="text-sm text-gray-500">{user?.state}, {user?.country}</p>
+      {/* Grid for Posts (Placeholder) */}
+      <div className="w-full max-w-3xl grid grid-cols-3 gap-2 mt-4">
+        <div className="bg-gray-300 w-full aspect-square"></div>
+        <div className="bg-gray-300 w-full aspect-square"></div>
+        <div className="bg-gray-300 w-full aspect-square"></div>
       </div>
     </div>
   );

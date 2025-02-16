@@ -25,7 +25,7 @@ export function RedisProvider({ children }) {
   
     const setCacheData = useCallback(async (key, value) => {
         try {
-            await redis.set(`userID:${key}`, JSON.stringify(value), { ex: 1209600 });
+            await redis.set(`userID:${key}`, value, { ex: 1209600 });
             setCache((prev) => ({ ...prev, [key]: value })); 
         } catch (error) {
             console.error("Error setting data in Redis:", error);
