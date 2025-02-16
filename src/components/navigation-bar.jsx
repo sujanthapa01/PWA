@@ -6,7 +6,6 @@ import useUserProfile from "@/hooks/useUserProfile";
 
 export default function NavigationBar() {
   const { user, loading } = useUserProfile();
-  console.log("user", user)
   return (
     <nav className="fixed bottom-0 left-0 w-full bg-white border-t border-gray-300 shadow-md p-2">
       <div className="flex justify-around items-center text-gray-700">
