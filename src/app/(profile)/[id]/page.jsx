@@ -33,7 +33,7 @@ export default function UserPage() {
     getSession();
   }, [getSession]);
 
-  // Fetch user data using useCallback
+ 
   const loadUser = useCallback(async () => {
     if (!session) return;
 
@@ -46,7 +46,6 @@ export default function UserPage() {
       if (userFromRedis) {
         const parsedData = typeof userFromRedis === "string" ? JSON.parse(userFromRedis) : userFromRedis;
 
-        // Only update state if the user data has changed
         if (JSON.stringify(parsedData) !== JSON.stringify(userData)) {
           setUserData(parsedData);
         }
@@ -66,7 +65,7 @@ export default function UserPage() {
         console.error("Error fetching user:", error);
         setUserData(null);
       } else {
-        // Only update state if necessary
+        
         if (JSON.stringify(user) !== JSON.stringify(userData)) {
           setUserData(user);
           await setCacheData(userId, JSON.stringify(user));

@@ -5,15 +5,17 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import Image from "next/image";
 import SpinnerLoader from "@/components/ui/loader";
+import {Bookmark,} from "lucide-react"
+import { MdCreate } from "react-icons/md";
 
 const Profile = ({ user }) => {
   if (!user) return <SpinnerLoader />;
 console.log(user)
   return (
-    <div className="flex flex-col items-center w-full min-h-screen bg-white px-4 sm:px-6 md:px-8">
-      {/* Profile Header */}
+    <div className="flex flex-col items-center w-full min-h-screen bg-white  sm:px-6 md:px-8">
+     
       <div className="w-full max-w-3xl flex-col flex items-center gap-6 py-6 border-b">
-        {/* Avatar */}
+     
         <Avatar className="w-24 h-24 sm:w-32 sm:h-32 border-2 border-gray-300">
           {user.avatar_url ? (
             <Image
@@ -57,11 +59,14 @@ console.log(user)
         {/* Action Buttons */}
         <div className="flex items-center gap-4 flex-col">
           <div className="flex gap-4">
-            <Button variant="outline" className="px-4 py-2 text-sm font-medium">
-              Follow
+            <Button variant="outline" className="bg-blue-500 text-white px-4 py-2 text-sm font-medium">
+          <MdCreate size={24}></MdCreate> 
+                           create
             </Button>
             <Button variant="outline" className="px-4 py-2 text-sm font-medium">
-              Message
+              <Bookmark size={24}></Bookmark>
+            
+              saved
             </Button>
           </div>
         </div>

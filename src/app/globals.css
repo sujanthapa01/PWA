@@ -5,6 +5,16 @@
 body {
   font-family: Arial, Helvetica, sans-serif;
 }
+/* Hide scrollbar for all browsers */
+::-webkit-scrollbar {
+  display: none;
+}
+
+html, body {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* Internet Explorer */
+}
+
 
 @layer base {
   :root {

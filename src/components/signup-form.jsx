@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { use, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
@@ -49,7 +49,6 @@ export default function SignupForm() {
         throw new Error(authResponse.error.message);
       }
 
-      // Get authenticated user
       const { data: sessionData, error: sessionError } = await supabase.auth.getUser();
       if (sessionError) throw new Error(sessionError.message);
 
@@ -70,6 +69,7 @@ export default function SignupForm() {
     }
   };
 
+  
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-4">
       <h2 className="text-2xl font-semibold">Sign Up</h2>
@@ -80,7 +80,9 @@ export default function SignupForm() {
           <Input
             id="email"
             type="email"
-            value={email}
+            disabled={usePassword == false ? true : false}
+            placeholder={usePassword == false ? "comming soon..." : "Email" }
+            value={usePassword == false ? "" : email }
             onChange={(e) => setEmail(e.target.value)}
             required
           />
@@ -92,6 +94,7 @@ export default function SignupForm() {
             <Input
               id="password"
               type="password"
+              
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -101,13 +104,14 @@ export default function SignupForm() {
 
         {error && <p className="text-red-500 text-sm">{error}</p>}
 
-        <Button type="submit" className="w-full" disabled={loading}>
+        <Button type="submit" className="w-full"  disabled={usePassword == false ? true : false}>
           {loading ? "Processing..." : usePassword ? "Sign Up with Password" : "Send Magic Link"}
         </Button>
 
         <button
           type="button"
           onClick={() => setUsePassword(!usePassword)}
+         
           className="mt-2 text-sm text-blue-500 underline"
         >
           {usePassword ? "Use Magic Link Instead" : "Use Password Instead"}
