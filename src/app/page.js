@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import useUserProfile from "@/hooks/useUserProfile";
 import { useEffect } from "react";
 import HomePage from "@/components/HomePage";
+import { LoginForm } from "@/components/login-form";
 
 export default function Home() {
   const { user: authUser } = useAuth();
@@ -19,6 +20,6 @@ export default function Home() {
 
 
   if (loading) return null;
-  if (!authUser) return <HomePage />;
+  if (!authUser) return <LoginForm />;
   return null; 
 }
