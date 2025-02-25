@@ -7,6 +7,7 @@ import Image from "next/image";
 import SpinnerLoader from "@/components/ui/loader";
 import {Bookmark,} from "lucide-react"
 import { MdCreate } from "react-icons/md";
+import Link from "next/link";
 
 const Profile = ({ user }) => {
   if (!user) return <SpinnerLoader />;
@@ -59,10 +60,12 @@ console.log(user)
         {/* Action Buttons */}
         <div className="flex items-center gap-4 flex-col">
           <div className="flex gap-4">
-            <Button variant="outline" className="bg-blue-500 text-white px-4 py-2 text-sm font-medium">
-          <MdCreate size={24}></MdCreate> 
-                           create
-            </Button>
+          <Link href="/create-blog">
+      <Button variant="outline" className="bg-blue-500 text-white px-4 py-2 text-sm font-medium flex items-center gap-2">
+        <MdCreate size={20} />
+        Create
+      </Button>
+    </Link>
             <Button variant="outline" className="px-4 py-2 text-sm font-medium">
               <Bookmark size={24}></Bookmark>
             
